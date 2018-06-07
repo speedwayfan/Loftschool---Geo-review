@@ -1,3 +1,8 @@
+        const points = [];
+        // const item = {};
+        const reviews = [];
+        // const newRewiewObj = {};
+
 ymaps.ready(function () {
     // var mapCenter = [55.755381, 37.619044],
        var map = new ymaps.Map('map', {
@@ -38,8 +43,6 @@ ymaps.ready(function () {
         // clusterBalloonPagerVisible: false
     });
 
-    const reviewArr = [];
-    const reviewObj = {};
 
     const modal = document.querySelector(".modal");
     const modalTitle = document.querySelector(".modal__title");
@@ -52,63 +55,88 @@ ymaps.ready(function () {
 
     map.events.add('click', function (e) {
         const coords = e.get('coords');
+        const x = e._cacher._cache.pagePixels[0];
+        const y = e._cacher._cache.pagePixels[1];
 
         ymaps.geocode(coords).then(function(res) {
             const firstGeoObject = res.geoObjects.get(0);
             let adress = firstGeoObject.getAddressLine();
 
+            // закрыть модальное окно по крестику
             closeModal.addEventListener('click', () => {
                 modal.classList.add('modal-closed');
+                modalReviews.innerText = 'Отзывов пока нет...';
             });
 
-            showModal(adress);
+            // если модальное окно display:none, то вызываем функцию открытия и задаем координаты верхней левой точки
+            if (modal.classList.contains('modal-closed')) {
+                modal.style.top = y + 'px';
+                modal.style.left = x + 'px';
+                showModal(adress);
+            }                        
         });
 
 
-    function showModal(adress) {
-        // получаем адрес после клика по карте
-        modal.classList.remove('modal-closed');
-        modalTitle.innerText = adress;
+        function showModal(adress) {
+            // получаем адрес после клика по карте
+            modal.classList.remove('modal-closed');
+            modalTitle.innerText = adress;
 
-        addButton.addEventListener('click', () => {
-        // после клика добавить очищаем поле отзыва от шаблонной фразы и вызываем функцию создания блока отзыва
-            modalReviews.innerText = '';
+            addButton.addEventListener('click', () => {
+                if (inputName.value != '' || inputPlace.value != '' || inputArea.value != '') {
+                    // после клика добавить очищаем поле отзыва от шаблонной фразы и вызываем функцию создания блока отзыва
+                    modalReviews.innerText = '';
+                    
+                    createReview();
+                    createMark();
+                }
+            })
+        }
 
-            createReview();
-            
-            createMark();
-        })
-    }
+        function createReview() {
+            const divOutReview = document.createElement('div');
+            const divNamePlace = document.createElement('div');
+            const divReview = document.createElement('div');
+            const newDate = new Date();
 
-    function createReview() {
-        const divOutReview = document.createElement('div');
-        const divNamePlace = document.createElement('div');
-        const divReview = document.createElement('div');
-        const newDate = new Date();
+            divNamePlace.innerHTML = `${inputName.value} ${inputPlace.value} ${newDate.toLocaleString()};`
+            divReview.innerHTML = inputArea.value;
 
-        divNamePlace.innerHTML = `${inputName.value} ${inputPlace.value} ${newDate.toLocaleString()};`
-        divReview.innerHTML = inputArea.value;
-        // добавляем инфо из инпута в блоки и сохраняем в объект эти значения с помощью функции
-        saveReview(divNamePlace.innerHTML, divReview.innerHTML);
-        
-        divOutReview.appendChild(divNamePlace);
-        divOutReview.appendChild(divReview);
-        modalReviews.appendChild(divOutReview);
+            // добавляем инфо из инпута в блоки и сохраняем в объект эти значения с помощью функции
+            saveReview(divNamePlace.innerHTML, divReview.innerHTML);
 
-        inputName.value = '';
-        inputPlace.value = '';
-        inputArea.value = '';
-    }
+            divOutReview.appendChild(divNamePlace);
+            divOutReview.appendChild(divReview);
+            modalReviews.appendChild(divOutReview);
 
-    function saveReview(namePlace, review) {
-        reviewObj.divNamePlace = namePlace;
-        reviewObj.divReview = review;
-        reviewArr.push(reviewObj);
+            inputName.value = '';
+            inputPlace.value = '';
+            inputArea.value = '';
+        }
 
-        localStorage.data = JSON.stringify({reviewArr});
-            console.log(localStorage.data);
-    }
+        function saveReview(namePlace, review) {
+            // newRewiewObj.divNamePlace = namePlace;
+            // newRewiewObj.divReview = review;
+            // item.id = coords;
+            // item.reviews = reviews;
 
+            reviews.push({ divNamePlace : namePlace, divReview : review });
+            points.push({ id : coords, reviews : [reviews] });
+
+            localStorage.data = JSON.stringify({points});
+                console.log(localStorage.data);
+        }
+
+    // const points = JSON.parse(localStorage.points);
+    // const review = { text: 'текст нового отзыва'}
+    // const index = points.findIndex(item => item.id == address) // находим точку с таким же адресом
+    // if(index !== -1){
+    //     const newPointState = {...points[index], reviews: [...points[index].reviews, review};
+    //     points.splice(index, newPointState);
+    // } else {
+    //     points.push({ id: 'address', reviews: [review] })
+    // }
+    // localStorage.setItem('points', points);
 
         function createMark() {
             // Заполняем кластер геообъектами
@@ -116,9 +144,9 @@ ymaps.ready(function () {
             // for (var i = 0, l = 10; i < l; i++) {
             var placemark = new ymaps.Placemark(coords, {
                 // Устаналиваем данные, которые будут отображаться в балуне.
-                balloonContentHeader: 'Метка №1',
-                balloonContentBody: 'Осенний вихрь!',
-                balloonContentFooter: 'Мацуо Басё'
+                balloonContentHeader: 'inputPlace',
+                balloonContentBody: 'address - ссылка',
+                balloonContentFooter: 'inputArea'
             }, {
                 preset: 'islands#icon',
                 iconColor: '#735184'
