@@ -51,8 +51,13 @@ html, body, #map{
     font-size: 12px;
 }
 
+/* .modal__title{
+    line-height: 20px;
+} */
+
 .smallCross{
     cursor: pointer;
+    font-size: 15px;
 }
 
 .modal__reviews{

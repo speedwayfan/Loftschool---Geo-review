@@ -20,7 +20,9 @@ ymaps.ready(function () {
     );
 
     var clusterer = new ymaps.Clusterer({
+        preset: 'islands#invertedVioletClusterIcons',
         clusterDisableClickZoom: true,
+        // разобраться с этим свойством
         clusterOpenBalloonOnClick: true,
         // Устанавливаем стандартный макет балуна кластера "Карусель".
         clusterBalloonContentLayout: 'cluster#balloonCarousel',
@@ -43,7 +45,6 @@ ymaps.ready(function () {
         // clusterBalloonPagerVisible: false
     });
 
-
     const modal = document.querySelector(".modal");
     const modalTitle = document.querySelector(".modal__title");
     const modalReviews = document.querySelector(".modal__reviews");
@@ -52,6 +53,8 @@ ymaps.ready(function () {
     const inputArea = document.querySelector(".input__area");
     const addButton = document.querySelector(".add__button");
     const closeModal = document.querySelector(".smallCross");
+    const clientWidth = document.body.clientWidth;
+    const clientHeight = document.body.clientHeight;
 
     map.events.add('click', function (e) {
         const coords = e.get('coords');
@@ -61,21 +64,35 @@ ymaps.ready(function () {
         ymaps.geocode(coords).then(function(res) {
             const firstGeoObject = res.geoObjects.get(0);
             let adress = firstGeoObject.getAddressLine();
-
+            
             // закрыть модальное окно по крестику
             closeModal.addEventListener('click', () => {
                 modal.classList.add('modal-closed');
-                modalReviews.innerText = 'Отзывов пока нет...';
+                modalReviews.innerText = 'Отзывов пока нет...';        // это наверно не обязательно, по новому клику всегда новое окно открывается
             });
 
             // если модальное окно display:none, то вызываем функцию открытия и задаем координаты верхней левой точки
             if (modal.classList.contains('modal-closed')) {
-                modal.style.top = y + 'px';
-                modal.style.left = x + 'px';
-                showModal(adress);
+                if (y > clientHeight - 425) {
+                    if (x > clientWidth - 280) {
+                        modal.style.top = clientHeight - 425 + 'px';
+                        modal.style.left = x - 280 + 'px';
+                        showModal(adress);
+                    } else { modal.style.top = clientHeight - 425 + 'px';
+                        modal.style.left = x + 'px';
+                        showModal(adress);
+                    }
+                } else if (x > clientWidth - 280) {
+                    modal.style.top = y + 'px';
+                    modal.style.left = x - 280 + 'px';
+                    showModal(adress);
+                } else {
+                    modal.style.top = y + 'px';
+                    modal.style.left = x + 'px';
+                    showModal(adress);
+                }
             }                        
         });
-
 
         function showModal(adress) {
             // получаем адрес после клика по карте
@@ -86,7 +103,7 @@ ymaps.ready(function () {
                 if (inputName.value != '' || inputPlace.value != '' || inputArea.value != '') {
                     // после клика добавить очищаем поле отзыва от шаблонной фразы и вызываем функцию создания блока отзыва
                     modalReviews.innerText = '';
-                    
+
                     createReview();
                     createMark();
                 }
@@ -115,11 +132,6 @@ ymaps.ready(function () {
         }
 
         function saveReview(namePlace, review) {
-            // newRewiewObj.divNamePlace = namePlace;
-            // newRewiewObj.divReview = review;
-            // item.id = coords;
-            // item.reviews = reviews;
-
             reviews.push({ divNamePlace : namePlace, divReview : review });
             points.push({ id : coords, reviews : [reviews] });
 
@@ -133,6 +145,7 @@ ymaps.ready(function () {
     // if(index !== -1){
     //     const newPointState = {...points[index], reviews: [...points[index].reviews, review};
     //     points.splice(index, newPointState);
+            // splice - удаляет часть массива и добавляет новые элементы на место удаленных
     // } else {
     //     points.push({ id: 'address', reviews: [review] })
     // }
@@ -157,8 +170,24 @@ ymaps.ready(function () {
             map.geoObjects.add(clusterer);
         }
     })
-
     clusterer.balloon.open(clusterer.getClusters());
 });
 
 
+
+            //     // const points = [...localStorage.points];
+            //     // const point = points.findIndex(item => item.id[0] == coords[0] && item.id[1] == coords[1])
+
+            //     // if(point === -1){
+            //         // выполняем мой код
+            //     //     points.push({ id : coords, reviews : [reviews] });
+            //     // } else {
+            //     //     points[point].reviews.push(review)
+            //     // }
+            //     // localStorage.points = points;
+
+            // reviews.push({ divNamePlace : namePlace, divReview : review });
+            // points.push({ id : coords, reviews : [reviews] });
+
+            // localStorage.data = JSON.stringify({points});
+            //     console.log(localStorage.data);
