@@ -102,3 +102,20 @@ html, body, #map{
 .modal-closed{
     display: none;
 }
+
+.ballon_header{
+    color: #000;
+}
+
+.ballon_body{
+    text-align: left;
+}
+
+.ballon_footer{
+    color: #000;
+    text-align: left;
+}
+
+.date_footer{
+    text-align: right;
+}
